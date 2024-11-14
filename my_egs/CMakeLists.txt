@@ -1,0 +1,80 @@
+cmake_minimum_required(VERSION 3.26)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++20")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fno-tree-slp-vectorize")
+
+set(project_name helloworld)
+project(${project_name})
+
+set(CINATRA_EXAMPLE
+	HelloWorld.cpp
+	)
+
+include_directories(../include)
+if(ENABLE_METRIC_JSON)
+	include_directories(../iguana)
+endif()
+
+add_executable(${project_name} ${CINATRA_EXAMPLE})
+target_compile_definitions(${project_name} PRIVATE ASYNC_SIMPLE_HAS_NOT_AIO)
+
+if (BUILD_BENCHMARK)
+	add_executable(benchmark benchmark.cpp)
+	target_compile_definitions(benchmark PRIVATE ASYNC_SIMPLE_HAS_NOT_AIO)
+endif()
+
+target_link_libraries(${project_name} ${OPENSSL_LIBRARIES} -lsndfile)
+
+if (ENABLE_SSL)
+	target_link_libraries(${project_name} ${OPENSSL_LIBRARIES} pthread -ldl)
+endif()
+
+if (ENABLE_CLIENT_SSL)
+	target_link_libraries(${project_name} ${OPENSSL_LIBRARIES} pthread -ldl)
+endif()
+
+if (ENABLE_GZIP)
+	target_link_libraries(${project_name} ${ZLIB_LIBRARIES})
+	target_link_libraries(benchmark PRIVATE ${ZLIB_LIBRARIES})
+endif()
+
+if (ENABLE_BROTLI)
+	include_directories(${BROTLI_INCLUDE_DIRS})
+	target_link_libraries(${project_name} ${BROTLI_LIBRARIES})
+	target_link_libraries(benchmark PRIVATE ${BROTLI_LIBRARIES})
+endif()
+
+if (ENABLE_SIMD STREQUAL "AARCH64")
+	if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
+		add_library(neon INTERFACE IMPORTED)
+		target_compile_options(neon INTERFACE -march=armv8-a+fp+simd)
+		target_link_libraries(${project_name} neon)
+		target_link_libraries(benchmark neon)
+	endif ()
+elseif (ENABLE_SIMD STREQUAL "SSE42")
+	if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+		add_library(sse4_2 INTERFACE IMPORTED)
+		if(MSVC)
+			target_compile_options(sse4_2 INTERFACE /arch:SSE4.2)
+		else()
+			target_compile_options(sse4_2 INTERFACE -msse4.2)
+		endif()
+		target_link_libraries(${project_name} sse4_2)
+		target_link_libraries(benchmark neon)
+	endif ()
+elseif (ENABLE_SIMD STREQUAL "AVX2")
+	if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+		add_library(avx2 INTERFACE IMPORTED)
+		if(MSVC)
+			target_compile_options(avx2 INTERFACE /arch:AVX2)
+		else()
+			target_compile_options(avx2 INTERFACE -mavx2)
+		endif()
+		target_link_libraries(${project_name} avx2)
+		target_link_libraries(benchmark neon)
+		set(CMAKE_CXX_FLAGS "-fpermissive")
+	endif ()
+endif ()
+
+
+install(TARGETS ${project_name} DESTINATION include)

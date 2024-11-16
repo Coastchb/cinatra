@@ -67,7 +67,10 @@ enum class status_type {
   insufficient_storage = 507,
   loop_detected = 508,
   not_extended = 510,
-  network_authentication_required = 511
+  network_authentication_required = 511,
+  init_tts_model_failed = 600,
+  tts_inference_failed = 601,
+  open_file_failed = 602
 };
 
 // http response status string

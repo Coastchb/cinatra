@@ -7,20 +7,6 @@
 #include <vector>
 #include <sndfile.hh>
 
-#include "cinatra/coro_http_client.hpp"
-#include "cinatra/coro_http_response.hpp"
-#include "cinatra/coro_http_router.hpp"
-#include "cinatra/define.h"
-#include "cinatra/mime_types.hpp"
-#include "../include/cinatra/cinatra_log_wrapper.hpp"
-#include "../include/cinatra/coro_http_connection.hpp"
-#include "../include/cinatra/ylt/coro_io/coro_file.hpp"
-#include "../include/cinatra/ylt/coro_io/coro_io.hpp"
-#include "../include/cinatra/ylt/coro_io/io_context_pool.hpp"
-#include "../include/cinatra/ylt/coro_io/load_blancer.hpp"
-#include "../include/cinatra/ylt/metric/system_metric.hpp"
-#include <iostream>
-
 #include "../include/cinatra.hpp"
 #include "cinatra/metric_conf.hpp"
 

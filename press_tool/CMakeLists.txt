@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.26)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++20")
 set(project_name cinatra_press_tool)
 project(${project_name})
 
